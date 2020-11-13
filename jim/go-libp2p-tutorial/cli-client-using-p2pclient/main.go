@@ -1,39 +1,44 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 
-	"github.com/libp2p/go-libp2p"
 	peerstore "github.com/libp2p/go-libp2p-core/peer"
-	"github.com/libp2p/go-libp2p/p2p/protocol/ping"
+	"github.com/libp2p/go-libp2p-daemon/p2pclient"
 	multiaddr "github.com/multiformats/go-multiaddr"
 )
 
 func main() {
-	// create a background context (i.e. one that never cancels)
-	ctx := context.Background()
+	controlMaddr, _ := multiaddr.NewMultiaddr("/unix/tmp/p2pd.sock")
+	listenMaddr, _ := multiaddr.NewMultiaddr("/ip4/127.0.0.1/tcp/0")
 
+	node, err := p2pclient.NewClient(controlMaddr, listenMaddr)
 	// start a libp2p node that listens on a random local TCP port,
 	// but without running the built-in ping protocol
-	node, err := libp2p.New(ctx,
-		libp2p.ListenAddrStrings("/ip4/127.0.0.1/tcp/0"),
-		libp2p.Ping(false),
-	)
+	/*
+		node, err := libp2p.New(ctx,
+			libp2p.ListenAddrStrings("/ip4/127.0.0.1/tcp/0"),
+			libp2p.Ping(false),
+		)
+	*/
 	if err != nil {
 		panic(err)
 	}
 
 	// configure our own ping protocol
-	pingService := &ping.PingService{Host: node}
-	node.SetStreamHandler(ping.ID, pingService.PingHandler)
+	/*
+		pingService := &ping.PingService{Host: node}
+		node.SetStreamHandler(ping.ID, pingService.PingHandler)
+	*/
+
+	nodeID, nodeAddrs, err := node.Identify()
 
 	// print the node's PeerInfo in multiaddr format
 	peerInfo := peerstore.AddrInfo{
-		ID:    node.ID(),
-		Addrs: node.Addrs(),
+		ID:    nodeID,
+		Addrs: nodeAddrs,
 	}
 	addrs, err := peerstore.AddrInfoToP2pAddrs(&peerInfo)
 	if err != nil {
@@ -49,10 +54,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	if err := node.Connect(ctx, *peer); err != nil {
+	fmt.Println("Dialing", addr.String())
+	if err := node.Connect(peer.ID, peer.Addrs); err != nil {
 		panic(err)
 	}
-	s, err := node.NewStream(ctx, peer.ID, "/cats")
+
+	_, s, err := node.NewStream(peer.ID, []string{"/cats"})
 	if err != nil {
 		fmt.Println("huh, this should have worked: ", err)
 		return

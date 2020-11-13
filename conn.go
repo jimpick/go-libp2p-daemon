@@ -2,6 +2,7 @@ package p2pd
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net"
 	"time"
@@ -167,6 +168,7 @@ func (d *Daemon) doIdentify(req *pb.Request) *pb.Response {
 }
 
 func (d *Daemon) doConnect(req *pb.Request) *pb.Response {
+	fmt.Printf("Jim doConnect\n")
 	if req.Connect == nil {
 		return errorResponseString("Malformed request; missing parameters")
 	}
@@ -179,6 +181,7 @@ func (d *Daemon) doConnect(req *pb.Request) *pb.Response {
 		log.Debugw("error parsing peer ID", "error", err)
 		return errorResponse(err)
 	}
+	fmt.Printf("Jim doConnect %v\n", pid)
 
 	var addrs []ma.Multiaddr
 	addrs = make([]ma.Multiaddr, len(req.Connect.Addrs))
@@ -189,6 +192,7 @@ func (d *Daemon) doConnect(req *pb.Request) *pb.Response {
 			return errorResponse(err)
 		}
 		addrs[x] = addr
+		fmt.Printf("Jim doConnect addr %v\n", addr.String())
 	}
 
 	pi := peer.AddrInfo{ID: pid, Addrs: addrs}

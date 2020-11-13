@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/libp2p/go-libp2p"
+	"github.com/libp2p/go-libp2p-core/network"
 	peerstore "github.com/libp2p/go-libp2p-core/peer"
 )
 
@@ -18,11 +19,20 @@ func main() {
 
 	// start a libp2p node with default settings
 	node, err := libp2p.New(ctx,
-		libp2p.ListenAddrStrings("/ip4/127.0.0.1/tcp/2070"),
+		libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/2070"),
 	)
 	if err != nil {
 		panic(err)
 	}
+
+	node.SetStreamHandler("/cats", func(s network.Stream) {
+		fmt.Println("Meow! It worked!")
+		_, err = s.Write([]byte("Meow!"))
+		if err != nil {
+			fmt.Println("Error", err)
+		}
+		s.Close()
+	})
 
 	// print the node's listening addresses
 	fmt.Println("Listen addresses:", node.Addrs())
