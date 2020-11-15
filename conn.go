@@ -2,6 +2,7 @@ package p2pd
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net"
 	"time"
@@ -19,7 +20,27 @@ import (
 const DefaultTimeout = 60 * time.Second
 
 func (d *Daemon) handleConn(c net.Conn) {
+	fmt.Printf("Jim handleConn\n")
 	defer c.Close()
+
+	/*
+		buf := make([]byte, 10)
+		for {
+			fmt.Println("Jim1")
+			line, err := c.Read(buf)
+			// line, isprefix, err := reader.ReadLine()
+			// fmt.Println("Jim2", line, isprefix, err)
+			fmt.Println("Jim2", line, err)
+			if err == io.EOF {
+				return
+			}
+			if err != nil {
+				fmt.Printf("Error: %v\n", err)
+				return
+			}
+			fmt.Println(line)
+		}
+	*/
 
 	r := ggio.NewDelimitedReader(c, network.MessageSizeMax)
 	w := ggio.NewDelimitedWriter(c)

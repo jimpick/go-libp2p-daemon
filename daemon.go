@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/libp2p/go-libp2p-daemon/config"
+	ws "github.com/libp2p/go-libp2p-daemon/websocket"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
@@ -64,11 +65,23 @@ func NewDaemon(ctx context.Context, maddr ma.Multiaddr, dhtMode string, opts ...
 	}
 	d.host = h
 
-	l, err := manet.Listen(maddr)
+	fmt.Printf("Jim p2pd daemon control listen maddr ws: %v\n", maddr.String())
+
+	wsTransport := ws.New()
+
+	/*
+		l, err := manet.Listen(maddr)
+		if err != nil {
+			h.Close()
+			return nil, err
+		}
+	*/
+	l, err := wsTransport.Listen(maddr)
 	if err != nil {
 		h.Close()
 		return nil, err
 	}
+
 	d.listener = l
 
 	go d.listen()

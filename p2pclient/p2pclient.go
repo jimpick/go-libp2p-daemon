@@ -1,6 +1,7 @@
 package p2pclient
 
 import (
+	"context"
 	"errors"
 	"sync"
 
@@ -9,6 +10,7 @@ import (
 	ggio "github.com/gogo/protobuf/io"
 	logging "github.com/ipfs/go-log"
 	pb "github.com/libp2p/go-libp2p-daemon/pb"
+	ws "github.com/libp2p/go-libp2p-daemon/websocket"
 	multiaddr "github.com/multiformats/go-multiaddr"
 	manet "github.com/multiformats/go-multiaddr/net"
 )
@@ -24,8 +26,9 @@ type Client struct {
 	listenMaddr  multiaddr.Multiaddr
 	listener     manet.Listener
 
-	mhandlers sync.Mutex
-	handlers  map[string]StreamHandlerFunc
+	mhandlers   sync.Mutex
+	handlers    map[string]StreamHandlerFunc
+	wsTransport *ws.WebsocketTransport
 }
 
 // NewClient creates a new libp2p daemon client, connecting to a daemon
@@ -35,6 +38,7 @@ func NewClient(controlMaddr, listenMaddr multiaddr.Multiaddr) (*Client, error) {
 	client := &Client{
 		controlMaddr: controlMaddr,
 		handlers:     make(map[string]StreamHandlerFunc),
+		wsTransport:  ws.New(),
 	}
 
 	if err := client.listen(listenMaddr); err != nil {
@@ -45,7 +49,9 @@ func NewClient(controlMaddr, listenMaddr multiaddr.Multiaddr) (*Client, error) {
 }
 
 func (c *Client) newControlConn() (manet.Conn, error) {
-	return manet.Dial(c.controlMaddr)
+	ctx := context.Background() // FIXME timeout
+	return c.wsTransport.Dial(ctx, c.controlMaddr)
+	// return manet.Dial(c.controlMaddr)
 }
 
 // Identify queries the daemon for its peer ID and listen addresses.
