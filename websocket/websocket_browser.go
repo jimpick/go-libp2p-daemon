@@ -6,24 +6,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"syscall/js"
 
 	"github.com/libp2p/go-libp2p-core/transport"
 	tptu "github.com/libp2p/go-libp2p-transport-upgrader"
 	ma "github.com/multiformats/go-multiaddr"
-	manet "github.com/multiformats/go-multiaddr-net"
+	manet "github.com/multiformats/go-multiaddr/net"
 )
 
 // WebsocketTransport is the actual go-libp2p transport
 type WebsocketTransport struct {
-	Upgrader *tptu.Upgrader
-	Config   *WebsocketConfig
+	Config *WebsocketConfig
 }
 
-func New(u *tptu.Upgrader) *WebsocketTransport {
+func New() *WebsocketTransport {
 	return &WebsocketTransport{
-		Upgrader: u,
-		Config:   DefaultWebsocketConfig(),
+		Config: DefaultWebsocketConfig(),
 	}
 }
 
@@ -40,8 +39,7 @@ func NewWithOptions(opts ...Option) func(u *tptu.Upgrader) *WebsocketTransport {
 
 	return func(u *tptu.Upgrader) *WebsocketTransport {
 		t := &WebsocketTransport{
-			Upgrader: u,
-			Config:   c,
+			Config: c,
 		}
 		return t
 	}
@@ -60,15 +58,17 @@ func (t *WebsocketTransport) maDial(ctx context.Context, raddr ma.Multiaddr) (mn
 		}
 	}()
 
-	fmt.Printf("Jim go-ws-transport browser dial %v\n", raddr.String())
+	fmt.Printf("Jim go-libp2p-daemon/websocket browser dial %v\n", raddr.String())
 	wsurl, err := parseMultiaddr(raddr)
 	if err != nil {
-		fmt.Printf("Jim go-ws-transport dial err %v\n", err)
+		fmt.Printf("Jim go-libp2p-daemon/websocket dial err %v\n", err)
 		return nil, err
 	}
-	fmt.Printf("Jim go-ws-transport wsurl %v\n", wsurl)
+	wsurlFixed := strings.Replace(wsurl.String(), "wssdaemon:", "wss:", 1)
+	wsurlFixed = strings.Replace(wsurlFixed, "wsdaemon:", "ws:", 1)
+	fmt.Printf("Jim go-libp2p-daemon/websocket %v\n", wsurlFixed)
 
-	rawConn := js.Global().Get("WebSocket").New(wsurl.String())
+	rawConn := js.Global().Get("WebSocket").New(wsurlFixed)
 	conn := NewConn(rawConn)
 	if err := conn.waitForOpen(); err != nil {
 		conn.Close()

@@ -11,7 +11,7 @@ import (
 	ws "github.com/gorilla/websocket"
 	tptu "github.com/libp2p/go-libp2p-transport-upgrader"
 	ma "github.com/multiformats/go-multiaddr"
-	manet "github.com/multiformats/go-multiaddr-net"
+	manet "github.com/multiformats/go-multiaddr/net"
 )
 
 // WebsocketTransport is the actual go-libp2p transport

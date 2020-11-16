@@ -9,7 +9,7 @@ import (
 
 	ws "github.com/gorilla/websocket"
 	ma "github.com/multiformats/go-multiaddr"
-	manet "github.com/multiformats/go-multiaddr-net"
+	manet "github.com/multiformats/go-multiaddr/net"
 )
 
 type listener struct {

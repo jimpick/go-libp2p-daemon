@@ -7,31 +7,32 @@ import (
 	"strconv"
 
 	ma "github.com/multiformats/go-multiaddr"
-	mafmt "github.com/multiformats/go-multiaddr-fmt"
-	manet "github.com/multiformats/go-multiaddr-net"
+	manet "github.com/multiformats/go-multiaddr/net"
+	"github.com/whyrusleeping/mafmt"
 )
 
 // WsProtocol is the multiaddr protocol definition for this transport.
 //
 // Deprecated: use `ma.ProtocolWithCode(ma.P_WS)
-var WsProtocol = ma.ProtocolWithCode(ma.P_WS)
+var WsProtocol = ma.ProtocolWithCode(ma.P_WSDAEMON)
 
 // WsFmt is multiaddr formatter for WsProtocol
+
 var WsFmt = mafmt.And(mafmt.TCP, mafmt.Or(
-	mafmt.Base(ma.P_WS),
-	mafmt.Base(ma.P_WSS),
+	mafmt.Base(ma.P_WSDAEMON),
+	mafmt.Base(ma.P_WSSDAEMON),
 ))
 
 // WsCodec is the multiaddr-net codec definition for the websocket transport
 var WsCodec = &manet.NetCodec{
-	NetAddrNetworks:  []string{"websocket"},
-	ProtocolName:     "ws",
+	NetAddrNetworks:  []string{"websocket daemon"},
+	ProtocolName:     "wsdaemon",
 	ConvertMultiaddr: ConvertWebsocketMultiaddrToNetAddr,
 	ParseNetAddr:     ParseWebsocketNetAddr,
 }
 var WssCodec = &manet.NetCodec{
-	NetAddrNetworks:  []string{"websocket secure"},
-	ProtocolName:     "wss",
+	NetAddrNetworks:  []string{"websocket secure daemon"},
+	ProtocolName:     "wssdaemon",
 	ConvertMultiaddr: ConvertWebsocketMultiaddrToNetAddr,
 	ParseNetAddr:     ParseWebsocketNetAddr,
 }
@@ -50,7 +51,7 @@ var _ net.Addr = (*Addr)(nil)
 
 // Network returns the network type for a WebSocket, "websocket".
 func (addr *Addr) Network() string {
-	return "websocket"
+	return "websocket daemon"
 }
 
 // NewAddr creates an Addr with `ws` scheme (insecure).
@@ -65,9 +66,9 @@ func NewAddr(host string) *Addr {
 // NewAddrWithScheme creates a new Addr using the given host string. isSecure
 // should be true for WSS connections and false for WS.
 func NewAddrWithScheme(host string, isSecure bool) *Addr {
-	scheme := "ws"
+	scheme := "wsdaemon"
 	if isSecure {
-		scheme = "wss"
+		scheme = "wssdaemon"
 	}
 	return &Addr{
 		URL: &url.URL{

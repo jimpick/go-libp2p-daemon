@@ -5,7 +5,7 @@ import (
 	"context"
 
 	ma "github.com/multiformats/go-multiaddr"
-	manet "github.com/multiformats/go-multiaddr-net"
+	manet "github.com/multiformats/go-multiaddr/net"
 )
 
 // Option is the type implemented by functional options.
@@ -15,18 +15,6 @@ import (
 type Option func(cfg *WebsocketConfig) error
 
 //var _ transport.Transport = (*WebsocketTransport)(nil)
-
-func (t *WebsocketTransport) CanDial(a ma.Multiaddr) bool {
-	return WsFmt.Matches(a)
-}
-
-func (t *WebsocketTransport) Protocols() []int {
-	return []int{ma.P_WS, ma.P_WSS}
-}
-
-func (t *WebsocketTransport) Proxy() bool {
-	return false
-}
 
 // func (t *WebsocketTransport) Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) (manet.Conn, error) {
 func (t *WebsocketTransport) Dial(ctx context.Context, raddr ma.Multiaddr) (manet.Conn, error) {
