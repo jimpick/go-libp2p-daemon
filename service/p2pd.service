@@ -1,0 +1,14 @@
+[Unit]
+Description=p2pd
+After=network-online.target
+Requires=network-online.target
+
+[Service]
+ExecStart=/home/ubuntu/go-libp2p-daemon/p2pd/p2pd -listen /ip4/0.0.0.0/tcp/2030/ws -hostAddrs /ip4/127.0.0.1/tcp/2040
+Restart=always
+RestartSec=10
+User=ubuntu
+Group=ubuntu
+
+[Install]
+WantedBy=multi-user.target
